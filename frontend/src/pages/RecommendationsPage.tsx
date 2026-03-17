@@ -1,11 +1,17 @@
 import { DashboardLayout } from '@/components/DashboardLayout';
-import { mockRecommendations } from '@/lib/mock-data';
+import { useQuery } from '@tanstack/react-query';
+import { fetchRecommendations } from '@/lib/api';
+import { Recommendation } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { Lightbulb, ArrowRight } from 'lucide-react';
 
 export default function RecommendationsPage() {
+  const { data: recommendations = [], isLoading } = useQuery<Recommendation[]>({ queryKey: ['recommendations'], queryFn: fetchRecommendations });
+
+  if (isLoading) return <DashboardLayout><div className="p-8 text-center text-muted-foreground">Chargement des recommandations...</div></DashboardLayout>;
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -20,7 +26,7 @@ export default function RecommendationsPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {mockRecommendations.map(r => (
+          {recommendations.map(r => (
             <div key={r.id} className="bg-card rounded-xl border p-6 shadow-card hover:shadow-elevated transition-shadow">
               <div className="flex items-center justify-between mb-4">
                 <Badge variant="secondary" className="text-xs">{r.categorie}</Badge>

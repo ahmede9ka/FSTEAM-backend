@@ -3,15 +3,23 @@ import { useParams, Link } from 'react-router-dom';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { StatusBadge, PriorityBadge } from '@/components/StatusBadge';
 import { ProgressBar } from '@/components/ProgressBar';
-import { mockProjects, mockTasks, mockMembers } from '@/lib/mock-data';
+import { useQuery } from '@tanstack/react-query';
+import { fetchProjects, fetchTasks, fetchMembers } from '@/lib/api';
+import { Project, Task, ProjectMember } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, User, Calendar, FileText, AlertTriangle, Clock } from 'lucide-react';
 
 export default function ProjectDetailsPage() {
   const { id } = useParams();
-  const project = mockProjects.find(p => p.id === id) || mockProjects[0];
-  const tasks = mockTasks.filter(t => t.projectId === project.id);
+  const { data: projects = [], isLoading: isLoadingProjects } = useQuery<Project[]>({ queryKey: ['projects'], queryFn: fetchProjects });
+  const { data: tasksData = [], isLoading: isLoadingTasks } = useQuery<Task[]>({ queryKey: ['tasks'], queryFn: fetchTasks });
+
+  const project = projects.find(p => p.id === id);
+  const tasks = tasksData.filter(t => t.projectId === project?.id);
+
+  if (isLoadingProjects) return <DashboardLayout><div className="p-8 text-center text-muted-foreground">Chargement du projet...</div></DashboardLayout>;
+  if (!project) return <DashboardLayout><div className="p-8 text-center text-destructive">Projet non trouvé</div></DashboardLayout>;
 
   const isLate = project.statut === 'En Retard';
   const deadlineDate = new Date(project.dateFin);

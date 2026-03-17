@@ -1,10 +1,16 @@
 import { DashboardLayout } from '@/components/DashboardLayout';
-import { mockMembers } from '@/lib/mock-data';
+import { useQuery } from '@tanstack/react-query';
+import { fetchMembers } from '@/lib/api';
+import { ProjectMember } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Plus, User, Pencil, Trash2 } from 'lucide-react';
 
 export default function MembersPage() {
+  const { data: members = [], isLoading } = useQuery<ProjectMember[]>({ queryKey: ['members'], queryFn: fetchMembers });
+
+  if (isLoading) return <DashboardLayout><div className="p-8 text-center text-muted-foreground">Chargement des membres...</div></DashboardLayout>;
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -15,7 +21,7 @@ export default function MembersPage() {
 
         <div className="bg-card rounded-xl border overflow-hidden">
           <div className="divide-y">
-            {mockMembers.map(m => (
+            {members.map(m => (
               <div key={m.id} className="flex items-center justify-between px-5 py-4 hover:bg-muted/20 transition-colors">
                 <div className="flex items-center gap-4">
                   <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">

@@ -1,6 +1,8 @@
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { StatCard } from '@/components/StatCard';
-import { mockProjects, mockTasks, mockMembers } from '@/lib/mock-data';
+import { useQuery } from '@tanstack/react-query';
+import { fetchProjects, fetchTasks, fetchMembers } from '@/lib/api';
+import { Project, Task, ProjectMember } from '@/lib/types';
 import { BarChart3, Users, ListTodo, TrendingUp } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useState } from 'react';
@@ -8,12 +10,16 @@ import { useState } from 'react';
 export default function StatisticsPage() {
   const [filter, setFilter] = useState('all');
 
-  const totalMembers = mockMembers.length;
-  const avgMembers = (mockProjects.reduce((s, p) => s + p.membres.length, 0) / mockProjects.length).toFixed(1);
-  const completedTasks = mockTasks.filter(t => t.statut === 'Terminée').length;
+  const { data: projects = [], isLoading: isLoadingProjects } = useQuery<Project[]>({ queryKey: ['projects'], queryFn: fetchProjects });
+  const { data: tasks = [], isLoading: isLoadingTasks } = useQuery<Task[]>({ queryKey: ['tasks'], queryFn: fetchTasks });
+  const { data: members = [], isLoading: isLoadingMembers } = useQuery<ProjectMember[]>({ queryKey: ['members'], queryFn: fetchMembers });
+
+  const totalMembers = members.length;
+  const avgMembers = projects.length > 0 ? (projects.reduce((s, p) => s + p.membres.length, 0) / projects.length).toFixed(1) : "0";
+  const completedTasks = tasks.filter(t => t.statut === 'Terminée').length;
 
   // Simulate member activity data
-  const memberStats = mockMembers.map(m => ({
+  const memberStats = members.map(m => ({
     nom: m.nom,
     tasksCompleted: Math.floor(Math.random() * 10) + 1,
     participation: Math.floor(Math.random() * 40) + 60,
@@ -38,7 +44,7 @@ export default function StatisticsPage() {
           <StatCard title="Participation" value="78%" icon={<Users className="h-5 w-5" />} variant="primary" />
           <StatCard title="Moy. membres/projet" value={avgMembers} icon={<TrendingUp className="h-5 w-5" />} variant="success" />
           <StatCard title="Tâches réalisées" value={completedTasks} icon={<ListTodo className="h-5 w-5" />} variant="warning" />
-          <StatCard title="Projets actifs" value={mockProjects.filter(p => p.statut === 'En cours').length} icon={<BarChart3 className="h-5 w-5" />} />
+          <StatCard title="Projets actifs" value={projects.filter(p => p.statut === 'En cours').length} icon={<BarChart3 className="h-5 w-5" />} />
         </div>
 
         {/* Members Activity */}
@@ -81,7 +87,7 @@ export default function StatisticsPage() {
                 </tr>
               </thead>
               <tbody>
-                {mockMembers.map(m => (
+                {members.map(m => (
                   <tr key={m.id} className="border-b last:border-0">
                     <td className="px-4 py-3 text-sm">{m.nom}</td>
                     <td className="px-4 py-3 text-sm text-center text-success font-medium">{Math.floor(Math.random() * 5) + 1}</td>

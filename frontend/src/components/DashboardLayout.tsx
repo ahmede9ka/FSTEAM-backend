@@ -4,11 +4,14 @@ import { AppSidebar } from '@/components/AppSidebar';
 import { Bell } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { Link } from 'react-router-dom';
-import { mockNotifications } from '@/lib/mock-data';
+import { useQuery } from '@tanstack/react-query';
+import { fetchNotifications } from '@/lib/api';
+import { Notification } from '@/lib/types';
 
 export function DashboardLayout({ children }: { children: ReactNode }) {
   const { userName } = useAuth();
-  const unreadCount = mockNotifications.filter(n => !n.lu).length;
+  const { data: notifications = [] } = useQuery<Notification[]>({ queryKey: ['notifications'], queryFn: fetchNotifications });
+  const unreadCount = notifications.filter(n => !n.lu).length;
 
   return (
     <SidebarProvider>

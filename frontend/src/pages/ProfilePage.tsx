@@ -1,6 +1,8 @@
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { useAuth } from '@/lib/auth-context';
-import { currentUser, mockProjects } from '@/lib/mock-data';
+import { useQuery } from '@tanstack/react-query';
+import { fetchCurrentUser, fetchProjects } from '@/lib/api';
+import { Project, User as UserType } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +10,13 @@ import { Label } from '@/components/ui/label';
 import { User, Mail, GraduationCap, Award, FolderKanban, Building2 } from 'lucide-react';
 
 function StudentProfile() {
-  const myProjects = mockProjects.filter(p => p.chefDeProjet === 'u1' || p.membres.some(m => m.userId === 'u1'));
+  const { data: currentUser, isLoading: isLoadingUser } = useQuery<UserType>({ queryKey: ['currentUser'], queryFn: fetchCurrentUser });
+  const { data: projects = [], isLoading: isLoadingProjects } = useQuery<Project[]>({ queryKey: ['projects'], queryFn: fetchProjects });
+
+  if (isLoadingUser || isLoadingProjects) return <div className="p-8 text-center text-muted-foreground">Chargement du profil...</div>;
+  if (!currentUser) return <div className="p-8 text-center text-destructive">Erreur: Utilisateur non trouvé</div>;
+
+  const myProjects = projects.filter(p => p.chefDeProjet === 'u1' || p.membres.some(m => m.userId === 'u1'));
 
   return (
     <div className="space-y-6">
@@ -77,6 +85,8 @@ function StudentProfile() {
 }
 
 function OrgProfile() {
+  const { data: projects = [] } = useQuery<Project[]>({ queryKey: ['projects'], queryFn: fetchProjects });
+
   return (
     <div className="space-y-6">
       <div className="bg-card rounded-xl border p-6">
@@ -107,7 +117,7 @@ function OrgProfile() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="bg-card rounded-xl border p-6 text-center">
-          <p className="text-3xl font-display font-bold text-primary">{mockProjects.length}</p>
+          <p className="text-3xl font-display font-bold text-primary">{projects.length}</p>
           <p className="text-sm text-muted-foreground">Projets créés</p>
         </div>
         <div className="bg-card rounded-xl border p-6 text-center">

@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/DashboardLayout';
-import { mockNotifications } from '@/lib/mock-data';
+import { useQuery } from '@tanstack/react-query';
+import { fetchNotifications } from '@/lib/api';
+import { Notification } from '@/lib/types';
 import { Bell, CheckCheck, Trash2, ListTodo, FolderKanban, CalendarDays, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -20,7 +22,14 @@ const typeColors = {
 };
 
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState(mockNotifications);
+  const { data: fetchedNotifications = [], isLoading } = useQuery<Notification[]>({ queryKey: ['notifications'], queryFn: fetchNotifications });
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  useEffect(() => {
+    if (fetchedNotifications.length > 0) {
+      setNotifications(fetchedNotifications);
+    }
+  }, [fetchedNotifications]);
 
   const markAsRead = (id: string) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, lu: true } : n));

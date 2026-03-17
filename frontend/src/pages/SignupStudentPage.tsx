@@ -7,12 +7,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { GraduationCap, X } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
-import { competencesList, facultesList } from '@/lib/mock-data';
+import { useQuery } from '@tanstack/react-query';
+import { fetchCompetences, fetchFacultes } from '@/lib/api';
 
 export default function SignupStudentPage() {
   const [competences, setCompetences] = useState<string[]>([]);
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  const { data: competencesList = [] } = useQuery<string[]>({ queryKey: ['competences'], queryFn: fetchCompetences });
+  const { data: facultesList = [] } = useQuery<string[]>({ queryKey: ['facultes'], queryFn: fetchFacultes });
 
   const addCompetence = (c: string) => {
     if (!competences.includes(c)) setCompetences([...competences, c]);

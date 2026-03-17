@@ -4,13 +4,20 @@ import { StatCard } from '@/components/StatCard';
 import { ProgressBar } from '@/components/ProgressBar';
 import { StatusBadge } from '@/components/StatusBadge';
 import { useAuth } from '@/lib/auth-context';
-import { mockProjects, mockTasks, mockEvents, mockRecommendations } from '@/lib/mock-data';
+import { useQuery } from '@tanstack/react-query';
+import { fetchProjects, fetchTasks, fetchEvents, fetchRecommendations } from '@/lib/api';
+import { Project, Task, Event, Recommendation } from '@/lib/types';
 import { FolderKanban, ListTodo, CalendarDays, Lightbulb, ArrowRight, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 function StudentDashboard() {
-  const myProjects = mockProjects.filter(p => p.chefDeProjet === 'u1' || p.membres.some(m => m.userId === 'u1'));
-  const myTasks = mockTasks.filter(t => t.assigneA === 'u1');
+  const { data: projects = [] } = useQuery<Project[]>({ queryKey: ['projects'], queryFn: fetchProjects });
+  const { data: tasks = [] } = useQuery<Task[]>({ queryKey: ['tasks'], queryFn: fetchTasks });
+  const { data: events = [] } = useQuery<Event[]>({ queryKey: ['events'], queryFn: fetchEvents });
+  const { data: recommendations = [] } = useQuery<Recommendation[]>({ queryKey: ['recommendations'], queryFn: fetchRecommendations });
+
+  const myProjects = projects.filter(p => p.chefDeProjet === 'u1' || p.membres.some(m => m.userId === 'u1'));
+  const myTasks = tasks.filter(t => t.assigneA === 'u1');
 
   return (
     <div className="space-y-6">
@@ -18,8 +25,8 @@ function StudentDashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard title="Mes Projets" value={myProjects.length} icon={<FolderKanban className="h-5 w-5" />} variant="primary" />
         <StatCard title="Tâches en cours" value={myTasks.filter(t => t.statut === 'En cours').length} icon={<ListTodo className="h-5 w-5" />} variant="warning" />
-        <StatCard title="Événements" value={mockEvents.length} icon={<CalendarDays className="h-5 w-5" />} variant="success" />
-        <StatCard title="Recommandations" value={mockRecommendations.length} icon={<Lightbulb className="h-5 w-5" />} />
+        <StatCard title="Événements" value={events.length} icon={<CalendarDays className="h-5 w-5" />} variant="success" />
+        <StatCard title="Recommandations" value={recommendations.length} icon={<Lightbulb className="h-5 w-5" />} />
       </div>
 
       {/* Projects */}
@@ -71,7 +78,7 @@ function StudentDashboard() {
             <Link to="/recommendations"><Button variant="ghost" size="sm" className="gap-1">Voir tout <ArrowRight className="h-3.5 w-3.5" /></Button></Link>
           </div>
           <div className="space-y-3">
-            {mockRecommendations.map(r => (
+            {recommendations.map(r => (
               <Link key={r.id} to={`/projects/${r.projetId}`} className="block p-3 rounded-lg hover:bg-muted/50 transition-colors">
                 <div className="flex items-center justify-between">
                   <p className="font-medium text-sm">{r.titre}</p>
@@ -91,7 +98,7 @@ function StudentDashboard() {
           <Link to="/events"><Button variant="ghost" size="sm" className="gap-1">Voir tout <ArrowRight className="h-3.5 w-3.5" /></Button></Link>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {mockEvents.slice(0, 2).map(e => (
+          {events.slice(0, 2).map(e => (
             <div key={e.id} className="p-4 rounded-lg border bg-muted/20">
               <h3 className="font-medium">{e.titre}</h3>
               <p className="text-xs text-muted-foreground mt-1">{e.lieu} · {new Date(e.dateHeure).toLocaleDateString('fr-FR')}</p>
@@ -108,9 +115,12 @@ function StudentDashboard() {
 }
 
 function OrgDashboard() {
-  const planned = mockProjects.filter(p => p.statut === 'Planifié').length;
-  const inProgress = mockProjects.filter(p => p.statut === 'En cours').length;
-  const late = mockProjects.filter(p => p.statut === 'En Retard').length;
+  const { data: projects = [] } = useQuery<Project[]>({ queryKey: ['projects'], queryFn: fetchProjects });
+  const { data: events = [] } = useQuery<Event[]>({ queryKey: ['events'], queryFn: fetchEvents });
+
+  const planned = projects.filter(p => p.statut === 'Planifié').length;
+  const inProgress = projects.filter(p => p.statut === 'En cours').length;
+  const late = projects.filter(p => p.statut === 'En Retard').length;
 
   return (
     <div className="space-y-6">
@@ -123,7 +133,7 @@ function OrgDashboard() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Projets" value={mockProjects.length} icon={<FolderKanban className="h-5 w-5" />} variant="primary" />
+        <StatCard title="Projets" value={projects.length} icon={<FolderKanban className="h-5 w-5" />} variant="primary" />
         <StatCard title="Planifiés" value={planned} icon={<Clock className="h-5 w-5" />} variant="default" />
         <StatCard title="En cours" value={inProgress} subtitle="projets actifs" icon={<ListTodo className="h-5 w-5" />} variant="success" />
         <StatCard title="En retard" value={late} icon={<Clock className="h-5 w-5" />} variant="destructive" />
@@ -133,7 +143,7 @@ function OrgDashboard() {
         <div className="bg-card rounded-xl border p-5">
           <h2 className="font-display font-semibold text-lg mb-4">Projets créés</h2>
           <div className="space-y-3">
-            {mockProjects.map(p => (
+            {projects.map(p => (
               <Link key={p.id} to={`/projects/${p.id}`} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors">
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm truncate">{p.titre}</p>
@@ -151,7 +161,7 @@ function OrgDashboard() {
         <div className="bg-card rounded-xl border p-5">
           <h2 className="font-display font-semibold text-lg mb-4">Événements créés</h2>
           <div className="space-y-3">
-            {mockEvents.map(e => (
+            {events.map(e => (
               <div key={e.id} className="p-3 rounded-lg bg-muted/30">
                 <div className="flex items-center justify-between">
                   <p className="font-medium text-sm">{e.titre}</p>
@@ -168,6 +178,8 @@ function OrgDashboard() {
 }
 
 function AdminDashboard() {
+  const { data: events = [] } = useQuery<Event[]>({ queryKey: ['events'], queryFn: fetchEvents });
+
   return (
     <div className="space-y-6">
       <h1 className="font-display text-2xl font-bold">Dashboard Admin</h1>
@@ -175,7 +187,7 @@ function AdminDashboard() {
         <StatCard title="Total Étudiants" value={156} icon={<FolderKanban className="h-5 w-5" />} variant="primary" />
         <StatCard title="Projets réalisés" value={42} icon={<ListTodo className="h-5 w-5" />} variant="success" />
         <StatCard title="Organisations" value={12} icon={<CalendarDays className="h-5 w-5" />} variant="warning" />
-        <StatCard title="Événements" value={mockEvents.length} icon={<Lightbulb className="h-5 w-5" />} />
+        <StatCard title="Événements" value={events.length} icon={<Lightbulb className="h-5 w-5" />} />
       </div>
 
       <div className="bg-card rounded-xl border p-5">
@@ -208,7 +220,7 @@ function AdminDashboard() {
             <p className="text-sm text-muted-foreground">Projets créés</p>
           </div>
           <div className="p-4 rounded-lg bg-muted/30 text-center">
-            <p className="text-3xl font-display font-bold text-secondary">{mockEvents.length}</p>
+            <p className="text-3xl font-display font-bold text-secondary">{events.length}</p>
             <p className="text-sm text-muted-foreground">Événements</p>
           </div>
         </div>
