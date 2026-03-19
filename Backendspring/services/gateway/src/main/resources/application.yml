@@ -15,6 +15,11 @@ spring:
               predicates:
                 - Path=/auth/**
 
+            - id: project-service
+              uri: lb://PROJECT-SERVICE
+              predicates:
+                - Path=/projets/**
+
             - id: user-service
               uri: lb://USER-SERVICE
               predicates:
@@ -23,4 +28,4 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}

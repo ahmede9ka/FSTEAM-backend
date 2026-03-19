@@ -7,8 +7,8 @@ spring:
 
 
   mongodb:
-    host: localhost
-    port: 27018
+    host: ${MONGODB_HOST:localhost}
+    port: ${MONGODB_PORT:27018}
     database: project_db
     username: maher
     password: maher
@@ -17,4 +17,4 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
