@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import tn.fst.authservice.dto.AuthResponse;
 import tn.fst.authservice.dto.LoginRequest;
 import tn.fst.authservice.dto.RegisterRequest;
+import tn.fst.authservice.dto.UserResponse;
 import tn.fst.authservice.entity.User;
 import tn.fst.authservice.repository.UserRepository;
 import tn.fst.authservice.security.JwtService;
@@ -55,5 +56,20 @@ public class AuthService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         return new AuthResponse(jwtService.generateToken(user.getEmail()));
+    }
+    // ✅ add at the end of AuthService.java
+    public UserResponse getUserByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found: " + email));
+        UserResponse response = new UserResponse();
+        response.setId(user.getId());
+        response.setEmail(user.getEmail());
+        response.setName(user.getName());
+        response.setRole(user.getRole().name());
+        return response;
+    }
+
+    public boolean userExists(String email) {
+        return userRepository.existsByEmail(email);
     }
 }
