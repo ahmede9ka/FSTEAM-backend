@@ -5,13 +5,8 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class UserResponse {
-    private Long id;
-    private String email;
+public class UpdateProfileRequest {
     private String name;
-    private String role;
-
-    // Student-specific fields
     private String faculte;
     private String specialite;
     private String idUniversitaire;
