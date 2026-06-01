@@ -1,5 +1,7 @@
 server:
-    port: ${PORT:10000}  # Changed from 8761 to 10000
+    port: ${PORT:8761}
+    servlet:
+        context-path: /
 
 spring:
     application:
@@ -10,7 +12,17 @@ eureka:
         register-with-eureka: false
         fetch-registry: false
     server:
+        enable-self-preservation: false
         wait-time-in-ms-when-sync-empty: 0
     instance:
-        hostname: ${EUREKA_HOSTNAME:${spring.application.name}}
-        prefer-ip-address: true
+        hostname: ${EUREKA_HOSTNAME:localhost}
+        prefer-ip-address: false
+
+management:
+    endpoints:
+        web:
+            exposure:
+                include: health,info
+    endpoint:
+        health:
+            show-details: always
