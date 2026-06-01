@@ -13,7 +13,6 @@ WORKDIR /app
 
 COPY --from=build /app/target/discovery-*.jar app.jar
 
-EXPOSE 8761
+EXPOSE 10000
 
-CMD ["java", "-jar", "app.jar"]
-
+ENTRYPOINT ["java", "-jar", "app.jar"]
