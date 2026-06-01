@@ -15,6 +15,6 @@ WORKDIR /app
 
 COPY --from=build /app/target/discovery-0.0.1-SNAPSHOT.jar app.jar
 
-EXPOSE 10000
+EXPOSE 8080
 
-CMD ["java", "-Xmx256m", "-Xms128m", "-jar", "app.jar"]
+ENTRYPOINT exec java -Xmx256m -Xms128m -Dserver.port=${PORT:-8080} -jar app.jar
