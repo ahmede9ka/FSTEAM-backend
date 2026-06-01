@@ -1,5 +1,5 @@
 server:
-    port: ${PORT:8761}
+    port: ${PORT:10000}  # Changed from 8761 to 10000
 
 spring:
     application:
