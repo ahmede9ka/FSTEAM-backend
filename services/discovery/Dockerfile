@@ -15,6 +15,10 @@ WORKDIR /app
 
 COPY --from=build /app/target/discovery-0.0.1-SNAPSHOT.jar app.jar
 
+RUN echo '#!/bin/sh' > /app/entrypoint.sh && \
+    echo 'exec java -Xmx256m -Xms128m -Dserver.port=${PORT:-8080} -jar /app/app.jar' >> /app/entrypoint.sh && \
+    chmod +x /app/entrypoint.sh
+
 EXPOSE 8080
 
-ENTRYPOINT exec java -Xmx256m -Xms128m -Dserver.port=${PORT:-8080} -jar app.jar
+ENTRYPOINT ["/app/entrypoint.sh"]
