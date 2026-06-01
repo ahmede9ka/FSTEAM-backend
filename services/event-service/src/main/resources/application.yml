@@ -1,17 +1,13 @@
 server:
-  port: 8083
+  port: ${PORT:8083}
 
 spring:
   application:
     name: EVENT-SERVICE
 
-  mongodb:
-    host: ${MONGODB_HOST:localhost}
-    port: ${MONGODB_PORT:27018}
-    database: event_db
-    username: maher
-    password: maher
-    authentication-database: admin
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://maher:maher@localhost:27018/event_db?authSource=admin}
 
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:29092}
@@ -23,3 +19,9 @@ eureka:
   client:
     service-url:
       defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    hostname: ${EUREKA_HOSTNAME:${spring.application.name}}
+    instance-id: ${spring.application.name}:${PORT:8083}:${random.value}
+    prefer-ip-address: true
